@@ -161,6 +161,10 @@ publishing {
             groupId = 'com.github.katzuv'
             artifactId = 'common'
             from components.java
+
+            pom {
+                description = 'FRC Team Galaxia 5987 in memory of David Zohar common library'
+            }
         }
     }
 
