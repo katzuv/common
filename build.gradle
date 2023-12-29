@@ -56,12 +56,6 @@ def includeDesktopSupport = true
 
 // Configuration for lib publishing and AdvantageKit
 repositories {
-   implementation {
-   	resolutionStrategy {
-   		preferLatestVersion()
-   	}
-   }
-
     maven {
       name = "GitHubPackages"
       url = "https://maven.pkg.github.com/katzuv/common"
@@ -121,8 +115,13 @@ test {
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
 }
 
-configurations.all {
+configurations {
+  all {
     exclude group: "edu.wpi.first.wpilibj"
+    }
+  implementation.resolutionStrategy {
+  	preferLatestVersion()
+  	}
 }
 
 // Simulation configuration (e.g. environment variables).
