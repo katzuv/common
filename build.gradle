@@ -7,8 +7,8 @@ plugins {
     id 'maven-publish'
 }
 
-group 'com.github.galaxia5987'
-version 'v1'
+group 'com.github.katzuv'
+version 'v1.6'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -158,7 +158,7 @@ gversion {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            groupId = 'com.github.Galaxia5987'
+            groupId = 'com.github.katzuv'
             artifactId = 'common'
             from components.java
         }
