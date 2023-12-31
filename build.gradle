@@ -185,4 +185,6 @@ publishing {
 jar {
 	 // Exclude source files from the JAR
 	 exclude('**/*.java')
+     // Exclude tests folder from the JAR
+    exclude('**/tests/**')
 }
