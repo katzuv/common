@@ -119,9 +119,6 @@ configurations {
   all {
     exclude group: "edu.wpi.first.wpilibj"
     }
-  implementation.resolutionStrategy {
-  	preferLatestVersion()
-  	}
 }
 
 // Simulation configuration (e.g. environment variables).
@@ -183,4 +180,9 @@ publishing {
       }
     }
  }
+}
+
+jar {
+	 // Exclude source files from the JAR
+	 exclude('**/*.java')
 }
