@@ -1,62 +1,39 @@
 package frc.robot.swerve;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import org.littletonrobotics.junction.AutoLog;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj2.command.Command;
+import lib.webconstants.LoggedTunableNumber;
 
 public interface ModuleIO {
     void updateInputs(SwerveModuleInputs inputs);
 
-    default double getAngle() {
-        return 0;
+    void updatePID();
+
+    default boolean hasPIDChanged(LoggedTunableNumber[] PIDValues) {
+        boolean hasChanged = false;
+        for (LoggedTunableNumber value : PIDValues) {
+            if (value.hasChanged(hashCode())) hasChanged = true;
+        }
+        return hasChanged;
     }
 
-    void setAngle(double angle);
+    Rotation2d getAngle();
 
-    default double getVelocity() {
-        return 0;
-    }
+    void setAngle(Rotation2d angle);
+
+    double getVelocity();
 
     void setVelocity(double velocity);
 
-    default SwerveModulePosition getModulePosition() {
-        return null;
-    }
+    SwerveModuleState getModuleState();
 
-    default void updateOffset(double offset) {
-    }
+    SwerveModulePosition getModulePosition();
 
-    default void neutralOutput() {
-    }
+    void stop();
 
-    default boolean encoderConnected() {
-        return false;
-    }
+    Command checkModule();
 
-    default void checkModule() {
-    }
-
-    @AutoLog
-    class SwerveModuleInputs {
-        public double driveMotorVelocity = 0;
-        public double driveMotorVelocitySetpoint = 0;
-        public double driveMotorSupplyCurrent = 0;
-        public double driveMotorStatorCurrent = 0;
-        public double driveMotorSupplyCurrentOverTime = 0;
-        public double driveMotorStatorCurrentOverTime = 0;
-        public double driveMotorPosition = 0;
-        public double driveMotorAppliedVoltage = 0;
-
-        public double angle = 0;
-        public double angleSetpoint = 0;
-        public double absolutePosition = 0;
-        public double angleMotorVelocity = 0;
-        public double angleMotorSupplyCurrent = 0;
-        public double angleMotorStatorCurrent = 0;
-        public double angleMotorSupplyCurrentOverTime = 0;
-        public double angleMotorStatorCurrentOverTime = 0;
-        public double angleMotorPosition = 0;
-        public double angleMotorAppliedVoltage = 0;
-
-        public double moduleDistance = 0;
-    }
+    default void updateOffset(Rotation2d offset) {}
 }

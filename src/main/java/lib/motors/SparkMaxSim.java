@@ -8,12 +8,22 @@ import edu.wpi.first.math.system.plant.DCMotor;
 
 public class SparkMaxSim extends SimMotor {
 
-    public SparkMaxSim(int numMotors, double gearing, double jKgMetersSquared) {
-        super(DCMotor.getNEO(numMotors), jKgMetersSquared, gearing);
+    public SparkMaxSim(
+            int numMotors, double gearing, double jKgMetersSquared, double conversionFactor) {
+        super(DCMotor.getNEO(numMotors), jKgMetersSquared, gearing, conversionFactor);
     }
 
-    public SparkMaxSim(LinearSystem<N2, N1, N2> model, int numMotors, double gearing) {
-        super(model, DCMotor.getNEO(numMotors), gearing);
+    public SparkMaxSim(
+            DCMotor motor, double gearing, double jKgMetersSquared, double conversionFactor) {
+        super(motor, jKgMetersSquared, gearing, conversionFactor);
+    }
+
+    public SparkMaxSim(
+            LinearSystem<N2, N1, N2> model,
+            int numMotors,
+            double gearing,
+            double conversionFactor) {
+        super(model, DCMotor.getNEO(numMotors), gearing, conversionFactor);
     }
 
     public void set(double speed) {
@@ -38,13 +48,15 @@ public class SparkMaxSim extends SimMotor {
                 setInputVoltage(controller.calculate(getPosition(), value) + arbFeedforward);
                 break;
             case kSmartMotion:
-                setInputVoltage(profiledController.calculate(getPosition(), value) + arbFeedforward);
+                setInputVoltage(
+                        profiledController.calculate(getPosition(), value) + arbFeedforward);
                 break;
             case kVelocity:
                 setInputVoltage(controller.calculate(getVelocity(), value) + arbFeedforward);
                 break;
             case kSmartVelocity:
-                setInputVoltage(profiledController.calculate(getVelocity(), value) + arbFeedforward);
+                setInputVoltage(
+                        profiledController.calculate(getVelocity(), value) + arbFeedforward);
                 break;
             case kVoltage:
                 setInputVoltage(value);
@@ -64,11 +76,11 @@ public class SparkMaxSim extends SimMotor {
     }
 
     public double getVelocity() {
-        return motorSim.getAngularVelocityRPM();
+        return motorSim.getAngularVelocityRPM() * conversionFactor;
     }
 
     public double getPosition() {
-        return motorSim.getAngularPositionRotations();
+        return motorSim.getAngularPositionRotations() * conversionFactor;
     }
 
     public double getOutputCurrent() {

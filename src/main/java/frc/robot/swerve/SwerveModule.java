@@ -3,9 +3,10 @@ package frc.robot.swerve;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import lib.math.differential.BooleanTrigger;
 import org.littletonrobotics.junction.Logger;
 
 public class SwerveModule extends SubsystemBase {
@@ -15,9 +16,10 @@ public class SwerveModule extends SubsystemBase {
     private final ModuleIO io;
 
     private final int number;
-    private final BooleanTrigger encoderTrigger = new BooleanTrigger();
     private final Timer timer = new Timer();
-    private SwerveModuleState currentModuleState = new SwerveModuleState();
+
+    private double lastDistance = 0;
+    private double[] deltas = new double[0];
 
     public SwerveModule(ModuleIO io, int number) {
         this.io = io;
@@ -27,13 +29,19 @@ public class SwerveModule extends SubsystemBase {
         timer.reset();
     }
 
+    public void setVelocity(double velocity) {
+        var angleError = loggerInputs.angleSetpoint.minus(loggerInputs.angle);
+        velocity *= angleError.getCos();
+        io.setVelocity(velocity);
+    }
+
     /**
      * Gets the state of a module.
      *
      * @return The state of a module.
      */
     public SwerveModuleState getModuleState() {
-        return currentModuleState;
+        return io.getModuleState();
     }
 
     /**
@@ -42,9 +50,9 @@ public class SwerveModule extends SubsystemBase {
      * @param moduleState A module state to set the module to.
      */
     public void setModuleState(SwerveModuleState moduleState) {
-        moduleState = SwerveModuleState.optimize(moduleState, new Rotation2d(loggerInputs.angle));
-        io.setVelocity(moduleState.speedMetersPerSecond);
-        io.setAngle(moduleState.angle.getRadians());
+        moduleState = SwerveModuleState.optimize(moduleState, loggerInputs.angle);
+        setVelocity(moduleState.speedMetersPerSecond);
+        io.setAngle(moduleState.angle);
     }
 
     /**
@@ -53,9 +61,7 @@ public class SwerveModule extends SubsystemBase {
      * @return Position of the module.
      */
     public SwerveModulePosition getModulePosition() {
-        return new SwerveModulePosition(
-                loggerInputs.moduleDistance, new Rotation2d(loggerInputs.angle)
-        );
+        return new SwerveModulePosition(loggerInputs.moduleDistance, loggerInputs.angle);
     }
 
     /**
@@ -90,39 +96,50 @@ public class SwerveModule extends SubsystemBase {
      *
      * @param offset The offset to update the angle motor's position. [sensor ticks]
      */
-    public void updateOffset(double offset) {
+    public void updateOffset(Rotation2d offset) {
         io.updateOffset(offset);
     }
 
-    public void neutralOutput() {
-        io.neutralOutput();
+    public void stop() {
+        io.stop();
     }
 
-    public boolean encoderConnected() {
-        return io.encoderConnected();
+    public Command checkModule() {
+        return io.checkModule();
     }
 
-    public void checkModule() {
-        io.checkModule();
+    public double[] getHighFreqDriveDistanceDeltas() {
+        return deltas;
+    }
+
+    public double[] getHighFreqDriveDistances() {
+        return loggerInputs.highFreqDistances;
+    }
+
+    public double[] getHighFreqAngles() {
+        return loggerInputs.highFreqAngles;
+    }
+
+    public double[] getHighFreqTimestamps() {
+        return loggerInputs.highFreqTimestamps;
+    }
+
+    public void updateInputs() {
+        io.updateInputs(loggerInputs);
+        Logger.processInputs("module_" + number, loggerInputs);
     }
 
     @Override
     public void periodic() {
-        currentModuleState = new SwerveModuleState(
-                io.getVelocity(), new Rotation2d(io.getAngle())
-        );
+        deltas = new double[loggerInputs.highFreqDistances.length];
+        for (int i = 0; i < deltas.length; i++) {
+            deltas[i] = loggerInputs.highFreqDistances[i] - lastDistance;
+            lastDistance = loggerInputs.highFreqDistances[i];
+        }
 
-        io.updateInputs(loggerInputs);
-
-        Logger.recordOutput("SwerveDrive/currentModuleState" + number, currentModuleState);
-
-        Logger.processInputs("module_" + number, loggerInputs);
-
-        encoderTrigger.update(io.encoderConnected());
-
-        if (timer.hasElapsed(1)) {
-            io.updateOffset(SwerveConstants.OFFSETS[number - 1]);
-            timer.reset();
+        if (timer.advanceIfElapsed(1)) {
+            io.updateOffset(
+                    new Rotation2d(Units.rotationsToRadians(SwerveConstants.OFFSETS[number - 1])));
         }
     }
 }

@@ -1,12 +1,14 @@
-package lib.math;
+package lib.math.interpolation;
 
 /**
  * A Double that can be interpolated using the InterpolatingTreeMap.
  *
  * @see InterpolatingTreeMap
  */
-public class InterpolatingDouble implements Interpolable<InterpolatingDouble>, InverseInterpolable<InterpolatingDouble>,
-        Comparable<InterpolatingDouble> {
+public class InterpolatingDouble
+        implements Interpolable<InterpolatingDouble>,
+                InverseInterpolable<InterpolatingDouble>,
+                Comparable<InterpolatingDouble> {
 
     public double value;
 
